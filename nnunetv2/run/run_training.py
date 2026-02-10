@@ -220,6 +220,12 @@ def run_training(dataset_name_or_id: Union[str, int],
 
 def run_training_entry():
     import argparse
+    import multiprocessing as mp
+    try:
+        mp.set_start_method("spawn", force=True)
+    except RuntimeError:
+        pass
+
     parser = argparse.ArgumentParser()
     parser.add_argument('dataset_name_or_id', type=str,
                         help="Dataset name or ID to train with")

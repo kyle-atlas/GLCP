@@ -1,7 +1,7 @@
 import torch
-from nnunetv2.training.loss.dice import SoftDiceLoss
-from nnunetv2.training.loss.robust_ce_loss import RobustCrossEntropyLoss
-from nnunetv2.training.loss.cldice_loss import SoftclDiceLoss
+from loss.dice import SoftDiceLoss
+from loss.robust_ce_loss import RobustCrossEntropyLoss
+from loss import SoftclDiceLoss
 from nnunetv2.utilities.helpers import softmax_helper_dim1
 from torch import nn
 

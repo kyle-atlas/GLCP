@@ -1,9 +1,8 @@
-import numpy as np
 from nnunetv2.training.loss.compound_glcp_loss_3dunet import DC_and_CE_and_GLCP_loss
 from nnunetv2.training.loss.dice import MemoryEfficientSoftDiceLoss
 from nnunetv2.training.nnUNetTrainer.variants.network_architecture.nnUNetTrainer_3DUnet_NoDeepSupervision import nnUNetTrainer_3DUnet_NoDeepSupervision
 
-class nnUNetTrainer_3DUnet_NoDeepSupervision_CE_DC(nnUNetTrainer_3DUnet_NoDeepSupervision):
+class nnUNetTrainer_3DUnet_NoDeepSupervision_CE_DC_crit_ske_refine(nnUNetTrainer_3DUnet_NoDeepSupervision):
 
     def _build_loss(self):
         

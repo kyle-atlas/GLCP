@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 import numpy as np
-from skimage.morphology import skeletonize_3d,skeletonize
+from skimage.morphology import skeletonize
 import torch.nn.functional as F
 import random
 from scipy.spatial.distance import cdist
@@ -12,7 +12,6 @@ from sklearn.cluster import DBSCAN
 import random
 from scipy.ndimage import distance_transform_edt
 import matplotlib.pyplot as plt
-from nnunetv2.training.loss.soft_skeleton import SoftSkeletonize
 from skimage import io
 import os
 
@@ -230,7 +229,6 @@ class Unet2D(nn.Module):
        
         self.final_conv_refine = nn.Conv2d(32, out_channels, kernel_size=1)
         self.refine_conv_seg = nn.Conv2d(2, 32, kernel_size=1)
-        # self.m_skeletonize = SoftSkeletonize(num_iter=10)
 
     def forward(self, x, mask=None, train=None):
         self.counter += 1

@@ -3,19 +3,16 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 import numpy as np
-from skimage.morphology import skeletonize_3d
 import torch.nn.functional as F
 import random
 from scipy.spatial.distance import cdist
 
 from sklearn.cluster import DBSCAN
 import random
+from skimage.morphology import skeletonize
 from scipy.ndimage import distance_transform_edt
 
-import matplotlib.pyplot as plt
-from nnunetv2.training.loss.soft_skeleton import SoftSkeletonize
-from skimage import io
-import os
+#from nnunetv2.training.loss.soft_skeleton import SoftSkeletonize
 
 
 
@@ -206,18 +203,18 @@ class Unet3D(nn.Module):
                         elif  (len(selected_endpoints) > 0 and len(selected_endpoints_FP) == 0  ):
                             selected_endpoints = selected_endpoints
                         elif  (len(selected_endpoints) > 0 and len(selected_endpoints_FP) > 0  ):
-                            print("selected_endpoints  ---", selected_endpoints.shape)
-                            print("selected_endpoints_FP  ---", selected_endpoints_FP.shape)
+                            #print("selected_endpoints  ---", selected_endpoints.shape)
+                            #print("selected_endpoints_FP  ---", selected_endpoints_FP.shape)
                             selected_endpoints = np.concatenate((selected_endpoints,selected_endpoints_FP),0)
 
 
                         if(len(selected_endpoints) > 0):
-                            print("selected_endpoints before cluster  ---", selected_endpoints.shape) 
+                            #print("selected_endpoints before cluster  ---", selected_endpoints.shape)
                             selected_endpoints = DBSCAN_2d(selected_endpoints, endpoints_np)
-                            print("selected_endpoints after cluster  ---", selected_endpoints.shape) #
+                            #print("selected_endpoints after cluster  ---", selected_endpoints.shape) #
 
                         else:
-                            print("no selected_endpoints after endpoints_select  ---")
+                            #print("no selected_endpoints after endpoints_select  ---")
                             mask_criticalregion_eachbatch.append(mask_criticalregion)
                             continue
                     else:
@@ -311,17 +308,24 @@ class Unet3D(nn.Module):
             refine module
             '''
 
-            x_refine= self.refine_conv_seg(x)
-            probs_weight = torch.softmax(x_criticalregion, dim=1)
-            probs_weight = probs_weight[:,1].unsqueeze(1)
-            prob_map_refine = x_refine * probs_weight
+            # x_refine: [B, 32, Z, Y, X]
+            x_refine = self.refine_conv_seg(x)
 
+            # weights as float32 (avoid fp16 underflow if using amp)
+            probs_weight = torch.softmax(x_criticalregion, dim=1)[:, 1:2]  # [B,1,...]
+            skeleton_weight = torch.softmax(x_skeleton, dim=1)[:, 1:2]  # [B,1,...]
 
-            skeleton_weight = torch.softmax(x_skeleton, dim=1)
-            skeleton_weight = skeleton_weight[:,1].unsqueeze(1)
-            skeleton_map_refine = x_refine * skeleton_weight
+            # Compute refine maps WITHOUT keeping extra big tensors around longer than needed
+            prob_map_refine = x_refine * probs_weight  # [B,32,...]
+            skeleton_map_refine = x_refine * skeleton_weight  # [B,32,...]
 
-            endpoint_features_refine = prob_map_refine + skeleton_map_refine  + x_refine 
+            # Build endpoint_features_refine in a way that avoids (a+b+c) temporary
+            endpoint_features_refine = prob_map_refine
+            endpoint_features_refine.add_(skeleton_map_refine)  # in-place add
+            endpoint_features_refine.add_(x_refine)  # in-place add
+
+            # Free big tensors before final conv (lets caching allocator reuse memory sooner)
+            del prob_map_refine, skeleton_map_refine, x_refine, probs_weight, skeleton_weight
 
             endpoint_features_refine = self.final_conv_refine(endpoint_features_refine)
 
@@ -373,7 +377,7 @@ def compute_skeleton_and_endpoints(batch_binary_output):
 
     for i in range(batch_binary_output.size(0)): 
         binary_np = batch_binary_output[i].cpu().numpy()  
-        skeleton_np = skeletonize_3d(binary_np)
+        skeleton_np = skeletonize(binary_np)
         skeleton_np[skeleton_np == 255] = 1
         skeleton_batch[i] = torch.tensor(skeleton_np).to(batch_binary_output.device) 
 
@@ -411,8 +415,8 @@ def endpoints_select(pred, gt, model='train'):
     else:
         threshold = mean_distance
         filtered_endpoints = pred[min_distances < threshold]
-    print("mean dis:", mean_distance)
-    print("std dis:", std_distance)
+    #print("mean dis:", mean_distance)
+    #print("std dis:", std_distance)
     return filtered_endpoints
 
 
@@ -435,8 +439,8 @@ def DBSCAN_2d(points_2d, img):
             clustered_points[label] = []
         clustered_points[label].append(points_2d[idx])
 
-    for cluster_id, points in clustered_points.items():
-        print(f"簇 {cluster_id}: {points}")
+    #for cluster_id, points in clustered_points.items():
+    #    print(f"簇 {cluster_id}: {points}")
 
     selected_points = []
     for cluster_id, points in clustered_points.items():

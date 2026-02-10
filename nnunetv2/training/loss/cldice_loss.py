@@ -46,7 +46,6 @@ class SoftclDiceLoss(torch.nn.Module):
 
         return cl_dice_loss
 if __name__ == '__main__':
-    from nnunetv2.utilities.helpers import softmax_helper_dim1
     pred = torch.rand((2, 3, 32, 32, 32))
     ref = torch.randint(0, 3, (2,  32, 32, 32))
     softclloss = SoftclDiceLoss()

@@ -1,6 +1,5 @@
-import numpy as np
-from nnunetv2.training.loss.compound_cldice_loss import DC_and_CE_and_CLDC_loss
-from nnunetv2.training.loss.dice import MemoryEfficientSoftDiceLoss
+from loss import DC_and_CE_and_CLDC_loss
+from loss.dice import MemoryEfficientSoftDiceLoss
 from nnunetv2.training.nnUNetTrainer.variants.network_architecture.nnUNetTrainerNoDeepSupervision import nnUNetTrainerNoDeepSupervision
 
 class nnUNetTrainer_CE_DC_CLDC_NoDeepSupervision(nnUNetTrainerNoDeepSupervision):

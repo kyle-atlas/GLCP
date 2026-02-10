@@ -10,7 +10,7 @@ from nnunetv2.training.loss.cbdice_loss import SoftcbDiceLoss, SoftclMDiceLoss
 
 
 import torch.nn.functional as F
-import numpy as np
+
 criterion_BCE_withlogits = nn.BCEWithLogitsLoss(reduction="mean")
 criterion_BCE = nn.BCELoss(reduction="mean")
 kl_loss = nn.KLDivLoss(reduction='mean')
@@ -189,13 +189,13 @@ class DC_and_CE_and_GLCP_loss(nn.Module):
         if prob_ske is not None:
             # con_loss = consistency_constraint_loss_mse(output_ske, prob_ske)
             con_loss = consistency_constraint_loss_kl(output_ske, prob_ske)
-            print("****consis_loss:", con_loss.item())
+            #print("****consis_loss:", con_loss.item())
         else:
             con_loss = 0
-        print("****ce_loss:", ce_loss.item() + dc_loss.item())
-        print("****ce_loss_ske:", ce_loss_ske)
-        print("****bce_loss_criticalregion:", bce_loss_criticalregion)
-        print("****ce_loss_refine:", ce_loss_refine)
+        #print("****ce_loss:", ce_loss.item() + dc_loss.item())
+        #print("****ce_loss_ske:", ce_loss_ske)
+        #print("****bce_loss_criticalregion:", bce_loss_criticalregion)
+        #print("****ce_loss_refine:", ce_loss_refine)
         result = ce_loss + self.weight_dice * dc_loss  + bce_loss_criticalregion + ce_loss_ske + 0.5* ce_loss_refine 
         return result
 

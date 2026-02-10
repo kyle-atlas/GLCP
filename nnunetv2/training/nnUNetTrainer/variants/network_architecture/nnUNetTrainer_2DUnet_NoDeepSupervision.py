@@ -1,23 +1,18 @@
 import os
 import torch
-from torch import autocast, nn
-from typing import Union, Tuple, List
-from torch import distributed as dist
+from torch import nn
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-from dynamic_network_architectures.architectures.unet import ResidualEncoderUNet, PlainConvUNet
-from nnunetv2.training.nnUNetTrainer.variants.network_architecture.monai.swin_unetr import SwinUNETR
-from dynamic_network_architectures.building_blocks.helper import convert_dim_to_conv_op, get_matching_batchnorm
-from dynamic_network_architectures.initialization.weight_init import init_last_bn_before_add_to_0, InitWeights_He
 from nnunetv2.training.nnUNetTrainer.variants.network_architecture.nnUNetTrainerNoDeepSupervision import nnUNetTrainerNoDeepSupervision
 from nnunetv2.utilities.plans_handling.plans_handler import ConfigurationManager, PlansManager
-from nnunetv2.utilities.get_network_from_plans import get_network_from_plans
-from nnunetv2.utilities.label_handling.label_handling import convert_labelmap_to_one_hot, determine_num_input_channels
-from nnunetv2.training.nnUNetTrainer.variants.network_architecture.Unet3D_nnunet_fullres import Unet3D
+from nnunetv2.utilities.label_handling.label_handling import determine_num_input_channels
+# from nnunetv2.training.nnUNetTrainer.variants.network_architecture.Unet3D import Unet3D
+# from nnunetv2.training.nnUNetTrainer.variants.network_architecture.Unet2D_nnunet import Unet2D
+from nnunetv2.training.nnUNetTrainer.variants.network_architecture.Unet2D_nnunet_fullres import Unet2D
 
 
 
-class nnUNetTrainer_3DUnet_NoDeepSupervision(nnUNetTrainerNoDeepSupervision):
+class nnUNetTrainer_2DUnet_NoDeepSupervision(nnUNetTrainerNoDeepSupervision):
     def initialize(self):
         if not self.was_initialized:
             self.num_input_channels = determine_num_input_channels(self.plans_manager, self.configuration_manager,
@@ -33,7 +28,7 @@ class nnUNetTrainer_3DUnet_NoDeepSupervision(nnUNetTrainerNoDeepSupervision):
             
             patch_size_tuple = tuple(patch_size)
             # self.network = SwinUNETR(img_size=patch_size_tuple, in_channels=self.num_input_channels, out_channels=label_manager.num_segmentation_heads, spatial_dims=len(patch_size), use_v2=False).to(self.device)
-            self.network = Unet3D(in_channels=1, out_channels=label_manager.num_segmentation_heads).to(self.device)
+            self.network = Unet2D(in_channels=3, out_channels=label_manager.num_segmentation_heads).to(self.device)
             print( self.network )
             # compile network for free speedup
             if ('nnUNet_compile' in os.environ.keys()) and (
@@ -68,6 +63,6 @@ class nnUNetTrainer_3DUnet_NoDeepSupervision(nnUNetTrainerNoDeepSupervision):
         patch_size = configuration_manager.patch_size
         patch_size_tuple = tuple(patch_size)
         # network = SwinUNETR(img_size=patch_size_tuple, in_channels=num_input_channels, out_channels=label_manager.num_segmentation_heads, spatial_dims=len(patch_size), use_v2=False)
-        network = Unet3D(in_channels=1, out_channels=label_manager.num_segmentation_heads)
+        network = Unet2D(in_channels=3, out_channels=label_manager.num_segmentation_heads)
 
         return network
