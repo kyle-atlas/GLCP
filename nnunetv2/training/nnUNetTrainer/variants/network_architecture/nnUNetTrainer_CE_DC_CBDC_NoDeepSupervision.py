@@ -1,5 +1,5 @@
-from loss import DC_and_CE_and_CBDC_loss
-from loss.dice import MemoryEfficientSoftDiceLoss
+from nnunetv2.training.loss.compound_cbdice_loss import DC_and_CE_and_CBDC_loss
+from nnunetv2.training.loss.dice import MemoryEfficientSoftDiceLoss
 from nnunetv2.training.nnUNetTrainer.variants.network_architecture.nnUNetTrainerNoDeepSupervision import nnUNetTrainerNoDeepSupervision
 
 class nnUNetTrainer_CE_DC_CBDC_NoDeepSupervision(nnUNetTrainerNoDeepSupervision):
