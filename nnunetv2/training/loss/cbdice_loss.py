@@ -1,5 +1,5 @@
 import torch
-from monai.transforms import distance_transform_edt
+from scipy.ndimage import distance_transform_edt
 from nnunetv2.training.loss.skeletonize import Skeletonize
 from nnunetv2.training.loss.soft_skeleton import SoftSkeletonize
 
