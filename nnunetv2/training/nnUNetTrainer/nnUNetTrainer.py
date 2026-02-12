@@ -137,11 +137,11 @@ class nnUNetTrainer(object):
                 if self.is_cascaded else None
 
         ### Some hyperparameters for you to fiddle with
-        self.initial_lr = 1e-2
+        self.initial_lr = 0.02
         self.weight_decay = 3e-5
         self.oversample_foreground_percent = 0.5
-        self.num_iterations_per_epoch = 250
-        self.num_val_iterations_per_epoch = 50
+        self.num_iterations_per_epoch = 65
+        self.num_val_iterations_per_epoch = 13
         self.num_epochs = 1000
         self.current_epoch = 0
 
@@ -177,7 +177,7 @@ class nnUNetTrainer(object):
         # self.configure_rotation_dummyDA_mirroring_and_inital_patch_size and will be saved in checkpoints
 
         ### checkpoint saving stuff
-        self.save_every = 5
+        self.save_every = 10
         self.disable_checkpointing = False
 
         ## DDP batch size and oversampling can differ between workers and needs adaptation

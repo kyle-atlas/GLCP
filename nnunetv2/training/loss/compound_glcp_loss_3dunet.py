@@ -37,10 +37,10 @@ def consistency_constraint_loss_kl(outputs_skeleton, prob_skeleton):
     truncated_prob_skeleton = prob_skeleton.detach() 
 
     # outputs_skeleton is prediction/prob_skeleton is GT
-    kl_loss_1 = F.kl_div(torch.log(outputs_skeleton), truncated_prob_skeleton, reduction='mean')
+    kl_loss_1 = F.kl_div(torch.log(outputs_skeleton), truncated_prob_skeleton, reduction='batchmean')
 
     # prob_skeleton is prediction/outputs_skeleton is GT
-    kl_loss_2 = F.kl_div(torch.log(prob_skeleton), truncated_outputs_skeleton, reduction='mean')
+    kl_loss_2 = F.kl_div(torch.log(prob_skeleton), truncated_outputs_skeleton, reduction='batchmean')
     Lcon = kl_loss_1 + kl_loss_2
     return Lcon
 
